@@ -50,14 +50,14 @@
 
 //transfer function (lookup table) colour values
 const glm::vec4 jet_values[9] = { glm::vec4(0, 0, 0.5, 0),
-glm::vec4(0, 0, 1, 0.1),
-glm::vec4(0, 0.5, 1, 0.3),
-glm::vec4(0, 1, 1, 0.5),
-glm::vec4(0.5, 1, 0.5, 0.75),
-glm::vec4(1, 1, 0, 0.8),
-glm::vec4(1, 0.5, 0, 0.6),
-glm::vec4(1, 0, 0, 0.5),
-glm::vec4(0.5, 0, 0, 0.0) };
+glm::vec4(0, 0, 1, 0.01),
+glm::vec4(0, 0.5, 1, 0.02),
+glm::vec4(0, 1, 1, 0.02),
+glm::vec4(0.5, 1, 0.5, 0.03),
+glm::vec4(1, 1, 0, 0.04),
+glm::vec4(1, 0.5, 0, 0.05),
+glm::vec4(1, 0, 0, 0.06),
+glm::vec4(0.5, 0, 0, 0.07) };
 
 TransferFunction::TransferFunction() : m_texture_id{ -1 }, m_dataLength{ 0 }, m_data{ nullptr }
 {
@@ -86,10 +86,50 @@ void TransferFunction::initGL()
 	glGenTextures(1, &m_texture_id);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_1D, m_texture_id);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, m_dataLength, 0, GL_RGBA, GL_FLOAT, m_data);
+}
+
+void TransferFunction::getJetColor(double value, double min_val, double max_val, float& r, float& g, float& b, float& a)
+{
+	// scale the value into the range [0, 8]
+	const double gray = 8 * ((value - min_val) / (max_val - min_val));
+	a = ((value - min_val) / (max_val - min_val));
+	// s is the slope of color change
+	const double s = 1.0 / 2.0;
+
+	if (gray <= 1)
+	{
+		r = 0;
+		g = 0;
+		b = (gray + 1)*s;
+	}
+	else if (gray <= 3)
+	{
+		r = 0;
+		g = (gray - 1)*s;
+		b = 255;
+	}
+	else if (gray <= 5)
+	{
+		r = (gray - 3)*s;
+		g = 255;
+		b = (5 - gray)*s;
+	}
+	else if (gray <= 7)
+	{
+		r = 255;
+		g = (7 - gray)*s;
+		b = 0;
+	}
+	else
+	{
+		r = (9 - gray)*s;
+		g = 0;
+		b = 0;
+	}
 }
 
 void TransferFunction::computeJetFunction()

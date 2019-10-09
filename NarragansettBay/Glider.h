@@ -20,43 +20,84 @@
 //  WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
 //  ----------------------------------
 //  
-///\file Trans ferFunction.h
+///\file Glider.h
 ///\author Benjamin Knorlein
-///\date 6/11/2019
+///\date 6/25/2019
 
 #pragma once
 
-#ifndef TRANSFERFUNCTION_H
-#define TRANSFERFUNCTION_H
+#ifndef GLIDER_H
+#define GLIDER_H
 
+#include <vector>
+#include "Tool.h"
+#include <glm/mat4x4.hpp>
+#include "Labels.h"
 
-class TransferFunction
-{
-public:
-	TransferFunction();
-	TransferFunction(float* data, unsigned int dataLength);
-	~TransferFunction();
-
-	void initGL();
-
-	unsigned& texture_id()
+struct _pt {
+	float vertex[3];
+	_pt(float x, float y, float z)
 	{
-		return m_texture_id;
-	}
-
-	void set_texture_id(const unsigned texture_id)
-	{
-		m_texture_id = texture_id;
-	}
-
-	static void getJetColor(double value, double min_val, double max_val, float &r, float &g, float &b, float &a);
-
-private:
-	void computeJetFunction();
-
-	unsigned int m_texture_id;
-	float* m_data;
-	unsigned int m_dataLength;
+		vertex[0] = x;
+		vertex[1] = y;
+		vertex[2] = z;
+	};
 };
 
-#endif // TRANSFERFUNCTION_H
+class Glider
+{
+public:
+	Glider();
+	~Glider();
+	
+	void updateList();
+
+	void draw();
+
+	std::vector<int>& date(int i)
+	{
+		return m_date[i];
+	}
+
+	std::vector < _pt >& positions()
+	{
+		return m_positions;
+	}
+
+	std::vector<std::string>& values_legend()
+	{
+		return m_values_legend;
+	}
+
+	std::vector< std::vector<float> >& values()
+	{
+		return m_values;
+	}
+
+	std::vector<std::pair < float, float>>& min_max()
+	{
+		return m_min_max;
+	}
+
+	void drawTool(glm::mat4 controllerpose);
+	void drawLabels(glm::mat4 &MV, glm::mat4 &headpose);
+
+	void parseLabels(){ m_label->parse(); }
+
+private:
+	//date in //month - day - hour - minute - second
+	std::vector<int> m_date[5];
+	std::vector < _pt >	m_positions;
+
+	std::vector<std::string> m_values_legend;
+	std::vector< std::vector<float> >m_values;
+	std::vector <std::pair < float,float> > m_min_max;
+
+	int m_current_value;
+	unsigned int m_display_list;
+
+	Tool * m_tool;
+	Labels * m_label;
+};
+
+#endif // GLIDER_H

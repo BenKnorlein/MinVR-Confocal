@@ -20,43 +20,27 @@
 //  WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
 //  ----------------------------------
 //  
-///\file Trans ferFunction.h
+///\file LoadGliderDataAction.h
 ///\author Benjamin Knorlein
-///\date 6/11/2019
+///\date 6/25/2019
 
 #pragma once
 
-#ifndef TRANSFERFUNCTION_H
-#define TRANSFERFUNCTION_H
+#ifndef LOADGLIDERDATAACTION_H
+#define LOADGLIDERDATAACTION_H
+#include <string>
+#include "Glider.h"
 
-
-class TransferFunction
+class LoadGliderDataAction
 {
 public:
-	TransferFunction();
-	TransferFunction(float* data, unsigned int dataLength);
-	~TransferFunction();
-
-	void initGL();
-
-	unsigned& texture_id()
-	{
-		return m_texture_id;
-	}
-
-	void set_texture_id(const unsigned texture_id)
-	{
-		m_texture_id = texture_id;
-	}
-
-	static void getJetColor(double value, double min_val, double max_val, float &r, float &g, float &b, float &a);
+	LoadGliderDataAction(std::string filename);
+	Glider* run();
 
 private:
-	void computeJetFunction();
-
-	unsigned int m_texture_id;
-	float* m_data;
-	unsigned int m_dataLength;
+	void computeMinMax(Glider * glider);
+	void parseLabels(Glider *glider, std::string line);
+	std::string m_filename;
 };
 
-#endif // TRANSFERFUNCTION_H
+#endif // LOADGLIDERDATAACTION_H

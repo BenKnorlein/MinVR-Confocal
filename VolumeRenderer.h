@@ -43,6 +43,10 @@ class VolumeRenderer
 
 		virtual void set_threshold(float threshold) = 0;
 		virtual void set_multiplier(float multiplier) = 0;
+		virtual void set_blending(bool useBlending, float alpha, Volume* volume) = 0;
+
+
+
 		void setClipping(bool isClipping, glm::mat4 * clipPlane)
 		{
 			m_clipping = isClipping;

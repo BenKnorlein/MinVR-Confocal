@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.inl>
 #include <glm/gtc/matrix_transform.hpp>
 #include "glm.h"
+#include "NarragansettBay/LoadGliderDataAction.h"
 
 float noColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 float ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
@@ -14,7 +15,7 @@ float diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 
 VolumeVisualizationApp::VolumeVisualizationApp(int argc, char** argv) : VRApp(argc, argv), m_grab{ false }
 , m_scale{ 1.0f }, width{ 10 }, height{ 10 }, m_texture_loaded{ false }, m_multiplier{ 1.0f }, m_threshold{ 0.0 }, m_shader_modifiers{false}
-, m_clipping{ false }, m_animated(false), m_framerepeat{ 60 }, m_framecounter{ 0 }, m_tune{ false }
+, m_clipping{ false }, m_animated(false), m_speed{ 0.1 }, m_frame{ 0.0 }, m_tune{ false }
 {
 	int argc_int = this->getLeftoverArgc();
 	char** argv_int = this->getLeftoverArgv();
@@ -53,6 +54,14 @@ VolumeVisualizationApp::VolumeVisualizationApp(int argc, char** argv) : VRApp(ar
 				else if (vals[0] == "animated")
 				{
 					m_animated = true;
+				}
+				else if (vals[0] == "glider")
+				{
+					std::cerr << "Load Glider data " << vals[1] << std::endl;
+					std::cerr << "for Volume " << vals[2] << std::endl;
+					m_gliders_volumeID.push_back(stoi(vals[2]) - 1);
+					m_gliders.push_back(LoadGliderDataAction(vals[1]).run());
+					m_gliders_MV.push_back(glm::mat4());
 				}
 				else if (vals[0] == "mesh")
 				{
@@ -357,7 +366,8 @@ void VolumeVisualizationApp::onRenderGraphicsContext(const VRGraphicsState &rend
 
 	if (m_animated)
 	{
-		m_framecounter++;
+		m_frame+=m_speed;
+		if (m_frame >= m_volumes.size() - 1) m_frame = 0.0 ;
 	}
 	rendercount = 0;
 }
@@ -396,6 +406,13 @@ void VolumeVisualizationApp::onRenderGraphicsScene(const VRGraphicsState &render
 		m_models_MV[i] = glm::scale(m_models_MV[i], glm::vec3(m_volumes[i]->get_volume_scale().x, m_volumes[i]->get_volume_scale().y, m_volumes[i]->get_volume_scale().x ));
 	}
 
+	//setup Modelview for gliders
+	for (int i = 0; i < m_gliders.size(); i++){
+		m_gliders_MV[i] = m_volumes[m_gliders_volumeID[i]]->get_volume_mv();
+		m_gliders_MV[i] = glm::translate(m_gliders_MV[i], glm::vec3(-0.5f, -0.5f, -0.5f * m_volumes[i]->get_volume_scale().x / m_volumes[i]->get_volume_scale().z));
+		m_gliders_MV[i] = glm::scale(m_gliders_MV[i], glm::vec3(1.0 , 1.0 , m_volumes[i]->get_volume_scale().x / m_volumes[i]->get_volume_scale().z));
+	}
+
 	//Set cuttingplane
 	if (m_clipping){
 		glm::mat4 clipPlane = inverse(m_controller_pose) * inverse(MV);
@@ -414,6 +431,15 @@ void VolumeVisualizationApp::onRenderGraphicsScene(const VRGraphicsState &render
 		glCallList(m_models_displayLists[i]);
 	}
 	
+	//Render glider
+	for (int i = 0; i < m_gliders.size(); i++){
+		glMatrixMode(GL_MODELVIEW); 
+		glLoadMatrixf(glm::value_ptr(m_gliders_MV[i]));
+		m_gliders[i]->draw();
+		m_gliders[i]->drawTool(MV * m_controller_pose);
+		m_gliders[i]->drawLabels(m_gliders_MV[i], m_headpose);
+	}
+
 	m_depthTextures[rendercount]->copyDepthbuffer();
 	(static_cast <VolumeRaycastRenderer*> (m_renders[1]))->setDepthTexture(m_depthTextures[rendercount]);
 
@@ -423,10 +449,13 @@ void VolumeVisualizationApp::onRenderGraphicsScene(const VRGraphicsState &render
 			ren->set_multiplier(m_multiplier);
 			ren->set_threshold(m_threshold);
 		}
-		
 		if (m_animated)
 		{
-			unsigned int active_volume = (m_framecounter / m_framerepeat) % m_volumes.size();
+
+			unsigned int active_volume = floor(m_frame);
+			unsigned int active_volume2 = ceil(m_frame);
+
+			m_renders[m_volumes[active_volume]->render_type()]->set_blending(true, m_frame - active_volume, m_volumes[active_volume2]);
 			m_renders[m_volumes[active_volume]->render_type()]->render(m_volumes[active_volume], m_volumes[active_volume]->get_volume_mv(), P, m_volumes[active_volume]->get_volume_scale().x / m_volumes[active_volume]->get_volume_scale().z);
 		}
 		else{
@@ -448,4 +477,5 @@ void VolumeVisualizationApp::onRenderGraphicsScene(const VRGraphicsState &render
 	glFlush();
 
 	rendercount++;
+	
 }

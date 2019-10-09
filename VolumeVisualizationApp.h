@@ -8,6 +8,7 @@
 #include "Volume.h"
 #include "VolumeRaycastRenderer.h"
 #include "DepthTexture.h"
+#include "NarragansettBay/Glider.h"
 using namespace MinVR;
 
 #include <vector>
@@ -74,8 +75,8 @@ private:
 	bool m_animated;
 	bool m_tune;
 
-	unsigned int m_framerepeat;
-	unsigned int m_framecounter;
+	float m_speed;
+	float m_frame;
 
 	glm::mat4 m_controller_pose;
 	glm::mat4 m_object_pose;
@@ -87,6 +88,10 @@ private:
 	std::vector<pt> m_models_position;
 	std::vector<int> m_models_volumeID;
 	std::vector<glm::mat4> m_models_MV;
+
+	std::vector<int> m_gliders_volumeID;
+	std::vector<glm::mat4> m_gliders_MV;
+	std::vector <Glider *> m_gliders;
 
 	GLfloat m_light_pos[4];
 	

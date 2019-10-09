@@ -153,7 +153,7 @@ void VolumeRaycastRenderer::render(Volume* volume, const glm::mat4 &MV, glm::mat
 	glBindVertexArray(cubeVAOID);
 	////use the volume shader
 	shader.set_P_inv(P_inv);
-	shader.set_stepSize(1.0f / volume->get_width(), 1.0f / volume->get_height(), 1.0f / volume->get_depth());
+	shader.set_stepSize(1.0f / volume->get_width() * 4, 1.0f / volume->get_height() * 4, 1.0f / volume->get_depth() * 4);
 	
 	shader.render(MVP, clipPlane, camPos);
 
@@ -187,6 +187,11 @@ void VolumeRaycastRenderer::set_threshold(float threshold)
 void VolumeRaycastRenderer::set_multiplier(float multiplier)
 {
 	shader.set_multiplier(multiplier);
+}
+
+void VolumeRaycastRenderer::set_blending(bool useBlending, float alpha, Volume* volume)
+{
+	shader.set_blending(useBlending, alpha, volume->get_texture_id());
 }
 
 void VolumeRaycastRenderer::setChannel(Volume* volume)

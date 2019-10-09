@@ -20,43 +20,33 @@
 //  WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
 //  ----------------------------------
 //  
-///\file Trans ferFunction.h
+///\file Labels.h
 ///\author Benjamin Knorlein
-///\date 6/11/2019
+///\date 6/25/2019
 
 #pragma once
 
-#ifndef TRANSFERFUNCTION_H
-#define TRANSFERFUNCTION_H
+#ifndef LABELS_H
+#define LABELS_H
+#include <vector>
+#include <glm/mat4x4.hpp>
 
+class Glider;
 
-class TransferFunction
+class Labels
 {
 public:
-	TransferFunction();
-	TransferFunction(float* data, unsigned int dataLength);
-	~TransferFunction();
+	Labels(Glider * glider);
+	~Labels();
 
-	void initGL();
-
-	unsigned& texture_id()
-	{
-		return m_texture_id;
-	}
-
-	void set_texture_id(const unsigned texture_id)
-	{
-		m_texture_id = texture_id;
-	}
-
-	static void getJetColor(double value, double min_val, double max_val, float &r, float &g, float &b, float &a);
+	void parse();
+	void draw(glm::mat4 &MV, glm::mat4 &headpose);
 
 private:
-	void computeJetFunction();
+	std::vector<std::string> marker;
+	std::vector<double> marker_idx;
 
-	unsigned int m_texture_id;
-	float* m_data;
-	unsigned int m_dataLength;
+	Glider* m_glider;
 };
 
-#endif // TRANSFERFUNCTION_H
+#endif // LABELS_H

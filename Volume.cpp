@@ -46,6 +46,9 @@ Volume::~Volume()
 
 	if (m_transfer_function != nullptr)
 		delete m_transfer_function;
+
+	if (data)
+		delete[] data;
 }
 
 void Volume::initGL()
@@ -107,6 +110,7 @@ void Volume::initGL()
 	});
 
 	delete[] data;
+	data = nullptr;
 
 	if (transfer_function())
 		transfer_function()->initGL();
